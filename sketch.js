@@ -1,5 +1,3 @@
-//credit for shrimp img: https://commons.wikimedia.org/wiki/File:NCI_steamed_shrimp.jpg
-
 
 let cw = window.innerWidth;
 let ch = window.innerHeight;
@@ -8,9 +6,9 @@ let eye_src, eyes;
 let eye_maxw, eye_maxh;
 let swell_state;
 
-let swell_mininc = 0.25;
-let swell_maxinc = 0.75;
-let swell_max = 200.0;
+let swell_mininc = 7.75;
+let swell_maxinc = 25.00;
+let swell_max = 75.0;
 let min_prop = 0.75
 let bg_gfx;
 let dim = 150;
@@ -25,11 +23,11 @@ let old_bg = [0,0,0];
 let new_bg = [0,0,0];
 let bg_ramp = 3500;
 let bg_start = 0;
-let bg_weights = [[0.0,0.15], [0.02, 0.04], [0.15, 0.15]];
+let bg_weights = [[0.0,0.25], [0.08, 0.16], [0.0, 0.25]];
 var shrimp;
 
 
-let num_eyes = 30;
+let num_eyes = 125;
 
 
 var polys = [];
@@ -43,9 +41,9 @@ let slice_idx;
 let num_slices = 50;
 let slice_prop;
 let slice_dir;
-let slice_max = 90;
+
 let slice_width;
-let horiz = false;
+let horiz = true;
 let src_dim = [[509, 213], [458, 217]];
 
 function preload(){
@@ -62,13 +60,13 @@ function slice_instantiate(eye_idx)
 {
     if(horiz == true)
     {
-	slice_prop[eye_idx] = Array.from({length: num_slices}, (x, i) => random(0.01,1.0));
+	slice_prop[eye_idx] = Array.from({length: num_slices}, (x, i) => random(0.75,2.75));
 	slice_dir[eye_idx] = Array.from({length: num_slices}, (x, i) => coin_flip());
     }
     else
     {
-	slice_prop[eye_idx] = Array.from({length: num_slices}, (x, i) => random(0.01,1.0));
-	slice_dir[eye_idx] = Array.from({length: num_slices}, (x, i) => 1.0);
+	slice_prop[eye_idx] = Array.from({length: num_slices}, (x, i) => random(0.75,2.75));
+	slice_dir[eye_idx] = Array.from({length: num_slices}, (x, i) => coin_flip());
     };
 			   
 }
@@ -153,7 +151,7 @@ function setup() {
     new_bg = new_bg_color();
     bg_ramp = 1250 + random(1750);
     bg_start = millis();
-    eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(2500 + random(7500)));
+    eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(5000 + random(7500)));
 
     slice_idx = Array.from({length: num_eyes});
     slice_width = Array.from({length: num_eyes});
@@ -165,9 +163,9 @@ function setup() {
     eye_pos  = Array.from({length: num_eyes});
     swell_state = Array.from({length: num_eyes}, (x) => 0);
 
-    swell_inc = Array.from({length: num_eyes}, () => random(0.25, 1.25));
+    swell_inc = Array.from({length: num_eyes}, () => random(swell_mininc, swell_maxinc));
     swell_dir = Array.from({length: num_eyes}, () => coin_flip());
-    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(55 + random(200)));
+    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(35 + random(220)));
 
     
     for(let i =0; i < num_eyes; i++)
@@ -175,7 +173,7 @@ function setup() {
 	let cur_srcidx = Math.floor(random(eye_src.length));
 	let eye_maxw = src_dim[cur_srcidx][0];
 	let eye_maxh = src_dim[cur_srcidx][1];
-	let cur_prop = random(0.25, 1.25);
+	let cur_prop = random(0.75, 2.75);
 	let cur_w = Math.floor(eye_maxw * cur_prop);
 	let cur_h = Math.floor(eye_maxh * cur_prop);
 	eyes[i] = createGraphics(cur_w, cur_h);
@@ -248,14 +246,21 @@ function eye_draw(cur_eye, eye_idx)
     {
 	let cur_w = cur_eye.width;
 	let cur_h = cur_eye.height;
-	let cur_slice = slice_idx[eye_idx][i];
+	//let cur_slice = slice_idx[eye_idx][i];
 	let cur_prop = slice_prop[eye_idx][i];
 	let cur_dir = slice_dir[eye_idx][i];
 	let cur_amt = cur_prop*cur_dir*cur_swell;
 	if(horiz == true)
-	    shift_line(cur_eye, 0, eye_pos[eye_idx][0], eye_pos[eye_idx][1], cur_slice , cur_amt, width, cur_h, slice_width[eye_idx]);
+	{
+
+	    draw_strip(cur_eye, 0, eye_pos[eye_idx][0], eye_pos[eye_idx][1], i, cur_amt, slice_width[eye_idx]);
+	}
+
 	else
-	    shift_line(cur_eye, 1, eye_pos[eye_idx][0], eye_pos[eye_idx][1],  cur_slice , cur_amt, cur_w, height, slice_width[eye_idx]);
+	{
+	    draw_strip(cur_eye, 1, eye_pos[eye_idx][0], eye_pos[eye_idx][1], i, cur_amt, slice_width[eye_idx]);
+
+	};
 	//console.log(cur_prop, cur_dir, cur_swell, cur_amt);
     };
 
@@ -287,106 +292,85 @@ function draw() {
     
 }
 
-// neg shift = shift left.
-function shift_line(img = null, horiz_vert = 0, x_off =0, y_off=0, idx = 0 , shift_amt = 0, cur_w = width, cur_h = height, chunk_size = 1)
+function draw_strip(img, horiz_vert, dest_x, dest_y, cur_idx, shift_amt, strip_size)
 {
-
+    let s_x, s_y, d_x, d_y, c_w, c_h;
+    // if we are starting within the bounds
+    let can_draw = false, can_copy = false;
+    let real_idx = cur_idx * strip_size;
     //horizontal
     if(horiz_vert == 0)
     {
-	let cur_idx = idx < 0 ? 0 : (idx >= height ? height - 1 : idx);
-	let cur_chunk = cur_idx + chunk_size >= height ? height - cur_idx : chunk_size;
-	let cur_shift = shift_amt >= width ? width - 1 : (shift_amt <= (-1 * width) ? (-1 * width) + 1 : shift_amt);
-	let dest_x = cur_shift + x_off;
-	let dest_y = cur_idx + y_off;
-
-	if(cur_shift > 0)
+	// strip dest idx we want
+	let copy_x = 0;
+	let copy_y = real_idx;
+	let want_idx = real_idx + dest_y; //draw_y
+	let want_shift = shift_amt + dest_x; //draw_x
+	let want_h = strip_size;
+	let want_w = img.width;
+	if(want_shift + want_w >= width) want_w = width - want_shift;
+	else if (want_shift < 0)
 	{
-	    let copy_width = cur_w - cur_shift;
-	    if((dest_x >= 0 && dest_x < width) && (dest_y >= 0 && dest_y < height) && (x_off >= 0 && x_off < width))
-	    {
-		if(img)
-		{
-		    copy(img, 0, cur_idx, copy_width, cur_chunk, dest_x, dest_y, copy_width, cur_chunk);
-		    copy(img, 0, cur_idx, 1, cur_chunk, x_off, dest_y, cur_shift, cur_chunk);
-		}
-		else
-		{
-		    copy(0, cur_idx, copy_width, cur_chunk, dest_x, dest_y, copy_width, cur_chunk);
-		    copy(0, cur_idx, 1, cur_chunk, x_off, dest_y, cur_shift, cur_chunk);
-		}
-	    };
-
-	}
-	else if (cur_shift < 0)
-	{
-	    let copy_width = cur_w + cur_shift;
-	    let dest_x2 = copy_width + x_off;
-	    let dest_y2 = cur_chunk + y_off;
-	    if((dest_x2 >= 0 && dest_x2 < width) && (dest_y >= 0 && dest_y < height) && (x_off >= 0 && x_off < width) && (dest_y2 >= 0 && dest_y2 < height))
-	    {
-		if(img)
-		{
-		    copy(img, cur_shift, cur_idx, copy_width, cur_chunk, x_off, dest_y, copy_width, cur_chunk);
-		    copy(img, cur_w - 1, cur_idx, 1, cur_chunk, dest_x2, dest_y2, -1 * cur_shift, cur_chunk);
-		}
-		else
-		{
-		    copy(cur_shift, cur_idx, copy_width, cur_chunk, x_off, dest_y, copy_width, cur_chunk);
-		    copy(cur_w - 1, cur_idx, 1, cur_chunk, dest_x2, dest_y2, -1 * cur_shift, cur_chunk);
-		};
-	    };
+	    copy_x = -1.0* want_shift;
+	    want_w = want_w + want_shift;
 	};
-	
+	if(want_idx  + want_h > height) want_h = height - want_idx;
+	else if(want_idx < 0)
+	{
+	    copy_y = -1.0 * want_idx;
+	    want_h = strip_size + want_idx;
+	}
+	can_draw = want_w > 0 && want_shift < width && want_idx < height;
+	can_copy = real_idx < img.height && want_h > 0 && want_w > 0;
+
+	d_x = want_shift;
+	d_y = want_idx;
+	c_w = want_w;
+	c_h = want_h;
+	s_y = real_idx;
+	s_x = copy_x;
+	s_y = copy_y;
     }
     else
-	{
-      //vertical
-	    let cur_idx =  idx < 0 ? 0 : (idx >= width ? width - 1  : idx);
-	    let cur_chunk = idx + chunk_size >= width ? width  - idx : chunk_size;
-	    let cur_shift = shift_amt >= height ? height - 1 : (shift_amt <= (-1 * height) ? (-1 * height) + 1 : shift_amt);
-	    let dest_x = cur_idx  + x_off;
-	    let dest_y = cur_shift + y_off;
-
-	    if(cur_shift > 0)
-	    {
-		let copy_height = cur_h - cur_shift;
-		if((y_off >= 0 && y_off < height) && (dest_x >= 0 && dest_x < width) && (dest_y >= 0 && dest_y < height))
-		{
-		    if(img)
-		    {
-			copy(img, cur_idx, 0, cur_chunk, copy_height, dest_x, dest_y, cur_chunk, copy_height);
-			copy(img, cur_idx, 0, cur_chunk, 1, dest_x, y_off, cur_chunk, cur_shift+1);
-		    }
-		    else
-		    {
-			copy(cur_idx, 0, cur_chunk, copy_height, dest_x, dest_y, cur_chunk, copy_height);
-			copy(cur_idx, 0, cur_chunk, 1, dest_x, y_off, cur_chunk, cur_shift+1);
-		    } 
-		};
-	    }
-	    else if (cur_shift < 0)
-	    {
-
-		let copy_height = cur_h + cur_shift;
-		let dest_y2 = copy_height + y_off;
-		if((dest_x >= 0 && dest_x < width) && (y_off >= 0 && y_off < height) && (dest_y2  >= 0 && dest_y2 < height))
-		{
-		    if(img)
-		    {
-			copy(img, cur_idx, -1*cur_shift, cur_chunk, copy_height, dest_x, y_off, cur_chunk, copy_height);
-			copy(img, cur_idx, cur_h - 1, cur_chunk, 1, dest_x, dest_y2, cur_chunk, -1 * cur_shift);
-		    }
-		    else
-		    {
-			copy(cur_idx, -1*cur_shift, cur_chunk, copy_height, dest_x, y_off, cur_chunk, copy_height);
-			copy(cur_idx, cur_h - 1, cur_chunk, 1, dest_x, dest_y2, cur_chunk, -1 * cur_shift);
-		    }
-		};
-	    };
-							     
+    {
+	// vertical
+	let copy_x = real_idx;
+	let copy_y = 0;
+	let want_idx = real_idx + dest_x; //draw_x
+	let want_shift = shift_amt + dest_y; //draw_y
+	let want_h = img.height;
+	let want_w = strip_size;
+	if(want_shift + want_h >= height) want_h = height - want_shift;
+	else if (want_shift < 0){
+	    copy_y = -1.0* want_shift;
+	    want_h = want_h + want_shift;
 	};
+	if(want_idx  + want_w > height) want_w = width - want_idx;
+	else if(want_idx < 0)
+	{
+	    copy_x = -1.0 * want_idx;
+	    want_w = strip_size + want_idx;
+	};
+	can_draw = want_w > 0 && want_shift < height && want_idx < width;
+	can_copy = real_idx < img.width && want_h > 0 && want_w > 0;
+
+	d_x = want_idx;
+	d_y = want_shift;
+	c_w = want_w;
+	c_h = want_h;
+	s_x = copy_x;
+	s_y = copy_y;
+	
+
+	
+    };
+
+    if(can_draw && can_copy)
+    {
+	copy(img, s_x, s_y, c_w, c_h, d_x, d_y, c_w, c_h);
+    }
 }
+
 
 function coin_flip()
 {

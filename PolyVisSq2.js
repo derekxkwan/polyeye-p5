@@ -1,4 +1,4 @@
-class PolyVisSq {
+class PolyVisSq2 {
     encode_str(want_str)
     {
 	let str_parsed = want_str.toLowerCase();
@@ -30,6 +30,7 @@ class PolyVisSq {
 	this.len = this.encoded.length;
 	this.word_dur = parseInt(this.len * this.ltr_dur);
 	this.dim =  dim;
+	this.gfx.colorMode(HSB);
     }
 
     get_cur_ltr(cur_time)
@@ -48,14 +49,20 @@ class PolyVisSq {
     draw(cur_time)
     {
 	let cur_ltr = this.get_cur_ltr(cur_time);
-	this.gfx.background(this.clr1);
+
+	//this.gfx.background(this.clr1);
+	this.gfx.clear();
+	this.gfx.stroke(this.clr1);
+	this.gfx.strokeWeight(10);
+	this.gfx.noFill();
+	this.gfx.square(0,0,this.dim);
 	if(cur_ltr >= 0)
 	    {
 		let cur_y = Math.floor(cur_ltr/5.0) % 5;
 		let cur_x = cur_ltr % 5;
 		let sq_dim = Math.round(this.dim/5.0);
-		this.gfx.noStroke();
-		this.gfx.fill(this.clr2);
+		this.gfx.strokeWeight(6);
+		this.gfx.stroke(this.clr2);
 		this.gfx.square(cur_x*sq_dim, cur_y*sq_dim, sq_dim);
 	    };
     }

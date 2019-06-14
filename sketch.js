@@ -6,9 +6,9 @@ let eye_src, eyes;
 let eye_maxw, eye_maxh;
 let swell_state;
 
-let swell_mininc = 7.75;
-let swell_maxinc = 25.00;
-let swell_max = 75.0;
+let swell_mininc = 1.75;
+let swell_maxinc = 7.00;
+let swell_max = 100.0;
 let min_prop = 0.75
 let bg_gfx;
 let dim = 150;
@@ -19,26 +19,21 @@ let min_swell = 0.35;
 let max_swell = 1.0;
 let swell_rng = max_swell - min_swell;
 
-let old_bg = [0,0,0];
-let new_bg = [0,0,0];
-let bg_ramp = 3500;
-let bg_start = 0;
-let bg_weights = [[0.0,0.25], [0.08, 0.16], [0.0, 0.25]];
-var shrimp;
 
+let poly_xpad = 10, poly_ypad = 10;
 
-let num_eyes = 125;
+let num_eyes = 75;
 
 
 var polys = [];
 var s_dur = [];
 
-let cstr = ["YOUNGESTATTHEDOCTOR", "EYEDROPSATNIGHT", "REFRIGERATEDMEDICATION", "EYEACHE", "PERIPHERALVISION"];
+let cstr = ["YOUNGESTATTHEDOCTOR", "EYEDROPSEVERYDAY", "REFRIGERATEDMEDICATION", "OPENANGLE", "INTRAOCULARPRESSURE", "VISUALFIELDTEST", "CUPTODISCRATIO", "BACKOFEYEPICTURES", "EYELIDASSISTANCE", "NUMBINGEYEDROPS", "LONGEYELASHES", "EYEDILATION", "PERMANENTVISIONLOSS", "AIRPUFFTEST", "OPTICNERVEDAMAGE"];
 
 
 let eye_pos, eye_swell, eye_dim, eye_img, eye_alpha;
 let slice_idx;
-let num_slices = 50;
+let num_slices = 25;
 let slice_prop;
 let slice_dir;
 
@@ -48,8 +43,8 @@ let src_dim = [[509, 213], [458, 217]];
 
 function preload(){
     //getting dims for images only returns 1 ?!
-    let eye1 = loadImage('assets/eye1b.png');
-    let eye2 = loadImage('assets/eye2b.png');
+    let eye1 = loadImage('assets/eye1ic2.png');
+    let eye2 = loadImage('assets/eye2ic2.png');
     //eye_maxw = Math.max(eye1.width, eye2.width);
     //eye_maxh = Math.max(eye1.height, eye2.height);
 
@@ -96,38 +91,6 @@ function disp_img(cur_eye, eye_idx, cur_time)
     image(cur_eye, cur_x, cur_y, cur_w, cur_h);
 }
 
-function disp_bg(cur_time)
-{
-    let cur_pos = cur_time - bg_start;
-
-    bg_gfx.colorMode(HSB, 255);
-    if(cur_pos >= bg_ramp)
-	{
-	    old_bg = new_bg;
-	    new_bg = new_bg_color();
-
-	    bg_start = cur_time;
-	};
-
-    cur_pos = (cur_pos % bg_ramp)/bg_ramp;
-    
-    let ret_bg = old_bg.map(
-	(old_clr, idx) =>
-	    
-	((new_bg[idx] - old_clr) * cur_pos) + old_clr
-	
-    );
-
-
-    let ret_color = color(ret_bg[0], ret_bg[1], ret_bg[2], 150);
-
-    bg_gfx.fill(ret_color);
-    bg_gfx.noStroke();
-    bg_gfx.rect(0,0,cw, ch);
-    image(bg_gfx, 0, 0, cw, ch);
-
-    
-}
 
 function  calc_coords(idx, cur_time)
 {
@@ -147,11 +110,8 @@ function setup() {
   // put setup code here
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
-    old_bg = new_bg_color();
-    new_bg = new_bg_color();
-    bg_ramp = 1250 + random(1750);
-    bg_start = millis();
-    eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(5000 + random(7500)));
+
+    eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 
     slice_idx = Array.from({length: num_eyes});
     slice_width = Array.from({length: num_eyes});
@@ -165,7 +125,7 @@ function setup() {
 
     swell_inc = Array.from({length: num_eyes}, () => random(swell_mininc, swell_maxinc));
     swell_dir = Array.from({length: num_eyes}, () => coin_flip());
-    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(35 + random(220)));
+    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(50 + random(250)));
 
     
     for(let i =0; i < num_eyes; i++)
@@ -173,7 +133,7 @@ function setup() {
 	let cur_srcidx = Math.floor(random(eye_src.length));
 	let eye_maxw = src_dim[cur_srcidx][0];
 	let eye_maxh = src_dim[cur_srcidx][1];
-	let cur_prop = random(0.75, 2.75);
+	let cur_prop = random(1.0, 3.5);
 	let cur_w = Math.floor(eye_maxw * cur_prop);
 	let cur_h = Math.floor(eye_maxh * cur_prop);
 	eyes[i] = createGraphics(cur_w, cur_h);
@@ -189,23 +149,28 @@ function setup() {
 	//console.log(cur_srcidx, eye_maxw, eye_maxh, cur_w, cur_h);
 	//console.log(cur_w, slice_width[i], slice_idx[i]);
 
-	eyes[i].tint(255, eye_alpha[i]);
+	eyes[i].tint(360, eye_alpha[i]);
 	eyes[i].image(eye_img[i], 0, 0, cur_w, cur_h);
 
     };
 
 
+    colorMode(HSB);
     for(let i = 0; i < num_poly; i++)
 	{
 	    let cur_str = cstr[Math.floor(random(cstr.length))];
-	    let c_c1 = color(random(256), random(256), random(256));
-	    let c_c2 = color(random(256), random(256), random(256));
-	    let c_dur = random(600) + 150;
+	    //let c_c1 = color(random(200, 206), random(200, 206), random(180, 256));
+	    //let c_c2 = color(random(200, 206), random(200, 206), random(180, 256));	    
+	    let c_c1 = color(random(280, 360), random(50, 100), random(80, 100));
+	    //let c_c2 = color(random(300, 360), random(50, 100), random(90, 100));
+
+
+	    let c_dur = random(750, 1750);
 	    //let c_dur = 125;
-	    let c_cx = (i % nx) * dim;
-	    let c_cy = Math.floor(i/nx) * dim;
-	    let c_sdur = Math.round(1000 + random(2500));
-	    let cur_poly = new PolyVisSq(cur_str, c_c1, c_c2, c_dur, c_cx, c_cy, dim);
+	    let c_cx = (i % nx) * dim + poly_xpad;
+	    let c_cy = Math.floor(i/nx) * dim + poly_ypad;
+	    let c_sdur = Math.round(random(2500,5000));
+	    let cur_poly = new PolyVisSq2(cur_str, c_c1, c_c1, c_dur, c_cx, c_cy, dim);
 	    polys.push(cur_poly);
 	    s_dur.push(c_sdur);
 	};
@@ -270,9 +235,11 @@ function draw() {
   // put drawing code here
     let cur_time = millis();
     clear();
-    disp_bg();
-    bg_gfx.background(0);
-    disp_bg(cur_time);
+    //disp_bg();
+    colorMode(RGB);
+    //bg_gfx.background(0);
+    //disp_bg(cur_time);
+    background(30);
     eyes.forEach((eye, idx) =>
 		{
 		    //tint(255, eye_alpha[idx]);
@@ -286,7 +253,7 @@ function draw() {
 
     //for(let i=0; i < num_eyes; i++) image(eyes[i], width/num_eyes*i, height/num_eyes);
 
-    //poly_draw(cur_time);
+    poly_draw(cur_time);
 
 
     

@@ -44,8 +44,8 @@ let src_dim = [[509, 213], [458, 217]];
 
 function preload(){
     //getting dims for images only returns 1 ?!
-    let eye1 = loadImage('assets/eye1ic2.png');
-    let eye2 = loadImage('assets/eye2ic2.png');
+    let eye1 = loadImage("assets/eye1ic2.png");
+    let eye2 = loadImage("assets/eye2ic2.png");
     //eye_maxw = Math.max(eye1.width, eye2.width);
     //eye_maxh = Math.max(eye1.height, eye2.height);
 

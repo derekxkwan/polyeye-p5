@@ -119,7 +119,7 @@ function  calc_coords(idx, cur_time)
 function setup() {
   // put setup code here
     let is_mobile = mobile_or_tablet();
-    console.log(is_mobile);
+    alert(is_mobile);
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
     frameRate(24);

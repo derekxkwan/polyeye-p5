@@ -23,7 +23,7 @@ let swell_rng = max_swell - min_swell;
 
 let poly_xpad = 10, poly_ypad = 10;
 
-let num_eyes = 100;
+let num_eyes = 20;
 
 let loaded = false;
 

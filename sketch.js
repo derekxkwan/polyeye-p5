@@ -9,7 +9,8 @@ let swell_state;
 let swell_mininc = 1.75;
 let swell_maxinc = 7.00;
 let swell_max = 100.0;
-let min_prop = 0.75
+let swell_inc, swell_dur;
+let min_prop = 0.75;
 let bg_gfx;
 let dim = 150;
 let nx = Math.floor(cw/dim);
@@ -22,7 +23,7 @@ let swell_rng = max_swell - min_swell;
 
 let poly_xpad = 10, poly_ypad = 10;
 
-let num_eyes = 75;
+let num_eyes = 100;
 
 
 var polys = [];
@@ -125,7 +126,7 @@ function setup() {
 
     swell_inc = Array.from({length: num_eyes}, () => random(swell_mininc, swell_maxinc));
     swell_dir = Array.from({length: num_eyes}, () => coin_flip());
-    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(50 + random(250)));
+    eye_alpha = Array.from({length: num_eyes}, () => Math.floor(random(100,215)));
 
     
     for(let i =0; i < num_eyes; i++)
@@ -133,7 +134,7 @@ function setup() {
 	let cur_srcidx = Math.floor(random(eye_src.length));
 	let eye_maxw = src_dim[cur_srcidx][0];
 	let eye_maxh = src_dim[cur_srcidx][1];
-	let cur_prop = random(1.0, 3.5);
+	let cur_prop = random(0.75, 2.5);
 	let cur_w = Math.floor(eye_maxw * cur_prop);
 	let cur_h = Math.floor(eye_maxh * cur_prop);
 	eyes[i] = createGraphics(cur_w, cur_h);

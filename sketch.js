@@ -58,7 +58,6 @@ function preload(){
 
     eye_src = [eye1, eye2];
 
-    if(window.mobile_tablet() == true) num_eyes = 20;
     loaded = true;
     }
 
@@ -122,6 +121,7 @@ function setup() {
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
     frameRate(24);
+    if(window.mobile_tablet() == true) num_eyes = 20;
 
     eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 

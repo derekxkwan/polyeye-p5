@@ -119,11 +119,14 @@ function  calc_coords(idx, cur_time)
 function setup() {
   // put setup code here
     let is_mobile = mobile_or_tablet();
-    alert(is_mobile);
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
     frameRate(24);
-    if(is_mobile == true) num_eyes = 20;
+    if(is_mobile == true){
+	num_eyes = 20;
+	alert("ismobile");
+	}
+    else alert("isnotmobile");
 
     eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 

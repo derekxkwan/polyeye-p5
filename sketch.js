@@ -123,10 +123,8 @@ function setup() {
     bg_gfx = createGraphics(cw,ch);
     frameRate(24);
     if(is_mobile == true){
-	num_eyes = 20;
-	alert("ismobile");
-	}
-    else alert("isnotmobile");
+	num_eyes = 10;
+	};
 
     eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 

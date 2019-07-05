@@ -118,10 +118,12 @@ function  calc_coords(idx, cur_time)
 
 function setup() {
   // put setup code here
+    let is_mobile = window.mobile_tablet();
+    console.log(is_mobile);
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
     frameRate(24);
-    if(window.mobile_tablet() == true) num_eyes = 20;
+    if(is_mobile == true) num_eyes = 20;
 
     eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 

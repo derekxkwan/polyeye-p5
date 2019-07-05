@@ -113,6 +113,7 @@ function setup() {
   // put setup code here
     createCanvas(cw,ch);
     bg_gfx = createGraphics(cw,ch);
+    frameRate(24);
 
     eye_swell = Array.from({length: num_eyes}, (x) => Math.floor(10000 + random(7500)));
 

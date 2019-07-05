@@ -23,7 +23,7 @@ let swell_rng = max_swell - min_swell;
 
 let poly_xpad = 10, poly_ypad = 10;
 
-let num_eyes = 20;
+let num_eyes = 100;
 
 let loaded = false;
 
@@ -43,6 +43,8 @@ let slice_width;
 let horiz = true;
 let src_dim = [[509, 213], [458, 217]];
 
+
+
 function preload(){
     //getting dims for images only returns 1 ?!
     let eye1 = loadImage("assets/eye1ic2.png");
@@ -51,6 +53,8 @@ function preload(){
     //eye_maxh = Math.max(eye1.height, eye2.height);
 
     eye_src = [eye1, eye2];
+
+    if(/Mobi/i.test(navigator.userAgent) || /Android/i.test(navigator.userAgent)) num_eyes = 20;
     loaded = true;
     }
 

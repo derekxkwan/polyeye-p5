@@ -25,6 +25,7 @@ let poly_xpad = 10, poly_ypad = 10;
 
 let num_eyes = 100;
 
+let loaded = false;
 
 var polys = [];
 var s_dur = [];
@@ -50,6 +51,7 @@ function preload(){
     //eye_maxh = Math.max(eye1.height, eye2.height);
 
     eye_src = [eye1, eye2];
+    loaded = true;
     }
 
 function slice_instantiate(eye_idx)
@@ -235,6 +237,8 @@ function eye_draw(cur_eye, eye_idx)
 function draw() {
   // put drawing code here
     let cur_time = millis();
+
+    if(loaded == true) {
     clear();
     //disp_bg();
     colorMode(RGB);
@@ -255,6 +259,7 @@ function draw() {
     //for(let i=0; i < num_eyes; i++) image(eyes[i], width/num_eyes*i, height/num_eyes);
 
     poly_draw(cur_time);
+	}
 
 
     
